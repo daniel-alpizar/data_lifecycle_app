@@ -1,0 +1,60 @@
+{%  extends "coffeeshop/base.html" %}
+{% load humanize %}
+
+
+{% block content %}
+<br>
+
+<div class="row">
+
+		<div class="col-md-4">
+			<div class="card text-center text-white  mb-3" id="database_info">
+			  	<div class="card-header">
+			  		<h5 class="card-title">Transactional Database</h5>
+			  	</div>
+			  	<div class="card-body">
+
+					<table class="table table-sm">
+							<tr align="left">
+								<td>Total records:</td>
+								<td>{{ records|intcomma }}</td>
+							</tr>
+					</table>
+					<form action="" method="POST">
+						{% csrf_token %}
+								  <br>
+								  <p style="color: black;">Do you want to delete the data?</p>
+								  <!-- <a class="btn btn-secondary" href="{% url 'transactional_db' %}"></a> -->
+						<button type="submit" class="btn btn-danger float-left" name="delete">Delete</button>
+					</form>
+			  	</div>
+			</div>
+		</div>
+		<div class="col-md-1"></div>
+		<div class="col-md-4">
+			<div class="card card-body">
+
+	      <p><b>Import CSV file:</b></p>
+	      <form method="post" enctype="multipart/form-data">
+	          {% csrf_token %}
+	          <input type="file" name="csv_file"><br>
+	          <button type="submit" class="btn btn-primary mt-4">Upload CSV</button>
+	      </form>
+	    </div>
+		</div>
+
+</div>
+<br>
+
+<form method="get" action="{% url 'transactional_db' %}">
+	<input type="hidden" name="render_data">
+    <button type="submit">Render Data</button>
+</form>
+
+<div class="row">
+	{% if df_render %}
+	  {{ df_render|safe }}
+	{% endif %}
+</div>
+
+{% endblock %}
