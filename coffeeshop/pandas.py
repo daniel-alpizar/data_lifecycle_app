@@ -2,7 +2,7 @@ import pandas as pd
 
 
 # Dataframe column types
-cols_integers = ['id','transaction_id','customer_id','order','product_id','quantity']
+cols_integers = ['transaction_id','customer_id','order','product_id','quantity']
 cols_floats = ['line_item_amount', 'unit_price']
 cols_dates = ['transaction_date','transaction_time']
 

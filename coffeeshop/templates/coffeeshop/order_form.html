@@ -2,16 +2,232 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<head>
-    <title>Coffee Shop Order Form</title>
-</head>
 <body>
-    <h1>Coffee Shop Order Form</h1>
-    <form method="post">
+    <div class="form-row col-md-3" style="padding-bottom: 20px;">
+        <label class="form-label">Customer</label>
+        <input type="text" class="form-control" placeholder="{{ customer }}" disabled>
+    </div>
+    <form id="inputForm" method="post">
         {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit">Submit Order</button>
+            {{ formset.management_form }}
+                {% for form in formset %}
+                    {% crispy form %}
+                {% endfor %}
+        <div class="form-row">
+            <div class="col-md-12 text-right">
+                <h4>Grand Total: <span id="grandTotal">$0.00</span></h4>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="addRow">+</button>
+        <button type="submit" class="btn btn-success">Submit</button>
     </form>
-</body>
 
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type='text/javascript'>
+        function updateElementIndex(el, prefix, ndx) {
+            var id_regex = new RegExp('(' + prefix + '-\\d+)');
+            var replacement = prefix + '-' + ndx;
+            if ($(el).attr("for")) $(el).attr("for", $(el).attr("for").replace(id_regex, replacement));
+            if (el.id) el.id = el.id.replace(id_regex, replacement);
+            if (el.name) el.name = el.name.replace(id_regex, replacement);
+        }
+        
+        function cloneMore(selector, prefix) {
+            var newElement = $(selector).clone(true);
+            var total = $('#id_' + prefix + '-TOTAL_FORMS').val();
+            newElement.find(':input:not([type=button]):not([type=submit]):not([type=reset])').each(function() {
+                var name = $(this).attr('name').replace('-' + (total - 1) + '-', '-' + total + '-');
+                var id = 'id_' + name;
+                $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
+            });
+            newElement.find('label').each(function() {
+                var forValue = $(this).attr('for');
+                if (forValue) {
+                    forValue = forValue.replace('-' + (total - 1) + '-', '-' + total + '-');
+                    $(this).attr({'for': forValue});
+                }
+            });
+            total++;
+            $('#id_' + prefix + '-TOTAL_FORMS').val(total);
+            $(selector).after(newElement);
+            var conditionRow = $('.form-row:not(:last)');
+            conditionRow.find('.btn.add-form-row')
+            .removeClass('btn-success').addClass('btn-danger')
+            .removeClass('add-form-row').addClass('remove-form-row')
+            .html('<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>');
+            return false;
+        }
+        
+        function deleteForm(prefix, btn) {
+            var total = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
+            if (total > 1) {
+                btn.closest('.row').remove();
+                var forms = $('.row');
+                $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
+                for (var i = 0, formCount = forms.length; i < formCount; i++) {
+                    $(forms.get(i)).find(':input').each(function() {
+                        updateElementIndex(this, prefix, i);
+                    });
+                }
+            }
+            return false;
+        }
+        
+        $(document).on('click', '#addRow', function (e) {
+            e.preventDefault();
+            cloneMore('.row:last', 'form');
+            return false;
+        });
+        
+        $(document).on('click', '.remove-form-row', function (e) {
+            e.preventDefault();
+            deleteForm('form', $(this));
+            return false;
+        });
+    </script>
+
+    <script>
+        // Function to update line_item_amount for a specific form in the formset
+        function updateLineItemAmount(formRow) {
+            var quantityInput = formRow.querySelector('.quantity-field');
+            var unitPriceInput = formRow.querySelector('.unit-price-field');
+            var lineItemAmountInput = formRow.querySelector('.line-item-amount-field');
+
+            var quantity = quantityInput ? parseFloat(quantityInput.value) || 0 : 0;
+            var unitPrice = unitPriceInput ? parseFloat(unitPriceInput.value) || 0 : 0;
+            var total = quantity * unitPrice;
+
+            if (lineItemAmountInput) {
+                lineItemAmountInput.value = total.toFixed(2);
+            }
+        }
+
+        // Event delegation for handling dynamic formset fields
+        document.addEventListener('input', function(event) {
+            if (event.target.matches('.quantity-field, .unit-price-field')) {
+                var formRow = event.target.closest('.row');
+                if (formRow) {
+                    updateLineItemAmount(formRow);
+                }
+            }
+        });
+
+        // Initial calculation for pre-populated forms
+        document.querySelectorAll('.row').forEach(function(formRow) {
+            updateLineItemAmount(formRow);
+        });
+    </script>
+
+    <script>
+        // Function to calculate Grand Total
+        function calculateGrandTotal() {
+            var grandTotal = 0;
+            document.querySelectorAll('.line-item-amount-field').forEach(function(input) {
+                var amount = parseFloat(input.value) || 0;
+                grandTotal += amount;
+            });
+            document.getElementById('grandTotal').textContent = `$${grandTotal.toFixed(2)}`;
+        }
+
+        function deleteForm(prefix, btn) {
+            var total = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
+            if (total > 1) {
+                btn.closest('.row').remove();
+                var forms = $('.row');
+                $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
+                for (var i = 0, formCount = forms.length; i < formCount; i++) {
+                    $(forms.get(i)).find(':input').each(function() {
+                        updateElementIndex(this, prefix, i);
+                    });
+                }
+                calculateGrandTotal(); // Recalculate the grand total after removing a row
+            }
+            return false;
+        }
+
+        document.addEventListener('input', function(event) {
+            if (event.target.matches('.quantity-field, .unit-price-field')) {
+                var formRow = event.target.closest('.row');
+                if (formRow) {
+                    updateLineItemAmount(formRow);
+                    calculateGrandTotal(); // Recalculate the grand total
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.row').forEach(function(formRow) {
+                updateLineItemAmount(formRow);
+            });
+            calculateGrandTotal();
+        });
+
+        $(document).on('click', '.remove-form-row', function (e) {
+            e.preventDefault();
+            deleteForm('form', $(this));
+            return false;
+        });
+    </script>
+
+    <script type="text/javascript">
+        // Script to convert url tag to js variable
+        var getProductPriceUrl = '{% url "get_product_price" %}';
+
+        // Script to fetch product.current_retail_price when product is selected
+        $(document).on('change', '[data-product-id="id_product"]', function() {
+            var productId = $(this).val();
+            var formRow = $(this).closest('.row');
+            $.ajax({
+                url: getProductPriceUrl,
+                data: {
+                    'product_id': productId
+                },
+                success: function(data) {
+                    if (data.price) {
+                        formRow.find('.unit-price-field').val(data.price);
+                        updateLineItemAmount(formRow.get(0)); // Update line item amount
+                        calculateGrandTotal(); // Recalculate grand total if needed
+                    }
+                },
+                error: function(xhr) {
+                    // Handle errors (e.g., product not found)
+                }
+            });
+        });
+
+        // Script to handle CSRF token in AJAX requests
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+    </script>
+
+
+</body>
+{{ form.errors }}
 {% endblock %}
