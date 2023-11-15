@@ -6,7 +6,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.urls import path
-from .models import Customers, DataWarehouse, Orders, Products, Rawdata
+from .models import Customers, Datawarehouse, Orders, Products, Rawdata
 
 
 class CsvCustomersForm(forms.Form):
@@ -184,7 +184,7 @@ class RawdataAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Customers, CustomersAdmin)
-admin.site.register(DataWarehouse)
+admin.site.register(Datawarehouse)
 admin.site.register(Orders)
 admin.site.register(Products, ProductsAdmin)
 admin.site.register(Rawdata, RawdataAdmin)

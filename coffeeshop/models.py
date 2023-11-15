@@ -2,7 +2,6 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from users.models import Profile
-import numpy as np
 
 
 class Customers(models.Model):
@@ -73,7 +72,7 @@ class Rawdata(models.Model):
     transaction_id = models.IntegerField(blank=False, null=False)
     transaction_date = models.DateField(auto_now_add=True, editable=False)
     transaction_time = models.TimeField(default=timezone.now, editable=False)
-    customer_id = models.IntegerField(blank=False, null=False, default=np.random.randint(100), editable=False)
+    customer_id = models.IntegerField(blank=False, null=False, default=99, editable=False)
     order = models.IntegerField(blank=False, null=False, default=1, editable=False)
     product = models.ForeignKey(Products, blank=False, null=False, on_delete=models.CASCADE)
     quantity = models.IntegerField(blank=False, null=False)
@@ -87,11 +86,11 @@ class Rawdata(models.Model):
         verbose_name_plural = 'Rawdata'
 
 
-class DataWarehouse(models.Model):
+class Datawarehouse(models.Model):
     transaction_id = models.IntegerField(blank=False, null=False)
     transaction_date = models.DateField(auto_now_add=True, editable=False)
     transaction_time = models.TimeField(default=timezone.now, editable=False)
-    customer_id = models.IntegerField(blank=False, null=False, default=np.random.randint(100), editable=False)
+    customer_id = models.IntegerField(blank=False, null=False, default=99, editable=False)
     order = models.IntegerField(blank=False, null=False, default=1, editable=False)
     product = models.ForeignKey(Products, blank=False, null=False, on_delete=models.CASCADE)
     quantity = models.IntegerField(blank=False, null=False)
@@ -102,4 +101,4 @@ class DataWarehouse(models.Model):
         return f'{self.transaction_id} - {self.quantity}'
     
     class Meta:
-        verbose_name_plural = 'DataWarehouse'
+        verbose_name_plural = 'Datawarehouse'

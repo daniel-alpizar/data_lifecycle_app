@@ -8,13 +8,13 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 from django_plotly_dash import DjangoDash
 from .plotly_app import plotly_treemap
-from .models import DataWarehouse
+from .models import Datawarehouse
 
 
 
 app = DjangoDash(name='dash_semana')
 
-orders_query = DataWarehouse.objects.all()
+orders_query = Datawarehouse.objects.all()
 df = pd.DataFrame(orders_query.values())
 
 def dash_test():

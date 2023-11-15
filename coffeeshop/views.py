@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import plotly.express as px
 from plotly.offline import plot
-from .models import DataWarehouse, Orders, Products, Profile, Rawdata
+from .models import Datawarehouse, Orders, Products, Profile, Rawdata
 from .pandas import df_format
 from .forms import CoffeeShopOrderForm
 from .plotly_app import plotly_treemap
@@ -158,7 +158,7 @@ def ETLView(request):
         # Stack data from Orders
         for order in Orders.objects.all():
             data_warehouse_entries.append(
-                DataWarehouse(
+                Datawarehouse(
                     transaction_id=order.transaction_id,
                     transaction_date=order.transaction_date,
                     transaction_time=order.transaction_time,
@@ -174,7 +174,7 @@ def ETLView(request):
         # Stack data from Rawdata
         for rawdata in Rawdata.objects.all():
             data_warehouse_entries.append(
-                DataWarehouse(
+                Datawarehouse(
                     transaction_id=rawdata.transaction_id,
                     transaction_date=rawdata.transaction_date,
                     transaction_time=rawdata.transaction_time,
@@ -187,20 +187,20 @@ def ETLView(request):
                 )
             )
 
-        # Bulk create DataWarehouse entries
-        DataWarehouse.objects.bulk_create(data_warehouse_entries)
+        # Bulk create Datawarehouse entries
+        Datawarehouse.objects.bulk_create(data_warehouse_entries)
         return render(request, template, context)
 
     elif request.method == 'GET' and 'render_data' in request.GET:
         # This is for rendering the data
-        orders_query = DataWarehouse.objects.all()[:20]
+        orders_query = Datawarehouse.objects.all()[:20]
 
         if orders_query.exists():
             # Convert the QuerySet to a DataFrame
             df = pd.DataFrame(orders_query.values())
         else:
             # Get column names from the model's fields
-            model_fields = DataWarehouse._meta.get_fields()
+            model_fields = Datawarehouse._meta.get_fields()
             column_names = [field.name for field in model_fields if field.concrete]
             df = pd.DataFrame(columns=column_names)
 
@@ -216,9 +216,9 @@ def ETLView(request):
 
 @login_required(login_url='login')
 def TreemapView(request):
-    '''Checks for data in DataWarehouse and renders a Plotly chart'''
-    if DataWarehouse.objects.all().exists():
-        orders_query = DataWarehouse.objects.all()
+    '''Checks for data in Datawarehouse and renders a Plotly chart'''
+    if Datawarehouse.objects.all().exists():
+        orders_query = Datawarehouse.objects.all()
         df = pd.DataFrame(orders_query.values())
         fig = px.treemap(df, 
                     path=['customer_id', 'product_id'], # Hierarchical data: first customer_id, then product_id
@@ -236,8 +236,8 @@ def TreemapView(request):
 
 @login_required(login_url='login')
 def DashView(request):
-    '''Checks for data in DataWarehouse and renders a Plotly Dash application'''
-    if DataWarehouse.objects.all().exists():
+    '''Checks for data in Datawarehouse and renders a Plotly Dash application'''
+    if Datawarehouse.objects.all().exists():
         context = {'data_exists': 'data_exists'}
         return render(request, 'coffeeshop/dash.html', context)
     else:
