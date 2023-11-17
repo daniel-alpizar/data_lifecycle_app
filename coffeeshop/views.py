@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Max
 from django.forms import modelformset_factory
+from django.forms.widgets import Select   
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import plotly.express as px
@@ -33,7 +34,7 @@ def OrdersDBView(request):
     records = Orders.objects.count()
 
     # Aggregate and find largest transaction by total amount
-    transactions_total = Orders.objects.values('transaction_id').annotate(total_amount=Sum('line_item_amount'))
+    transactions_total = Orders.objects.values('order').annotate(total_amount=Sum('line_item_amount'))
     largest_transaction = transactions_total.aggregate(largest_amount=Max('total_amount'))
     largest_transactions = transactions_total.filter(total_amount=largest_transaction['largest_amount'])
 
@@ -111,26 +112,35 @@ def OrderFormSetView(request):
     template = 'coffeeshop/order_form.html'
     context = {'title': 'Order Form'}
 
-    MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=1)
+    # MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=1)
 
     if request.method == 'POST':
+        MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=0)
         formset = MyModelFormSet(request.POST, queryset=Orders.objects.none())
 
         # Get the profile of the currently logged-in user
         user_profile = Profile.objects.get(user=request.user)
 
         if formset.is_valid():
+            # Get the highest current order number and increment by 1
+            max_order = Orders.objects.aggregate(Max('order'))['order__max'] or 0
+            max_order += 1
+
             instances = formset.save(commit=False)  # Create instances but don't save to the database yet
 
             for instance in instances:
+                instance.order = max_order
                 instance.customer = user_profile  # Set the customer field to the current user's profile
                 instance.save()
 
-            transaction_ids = [instance.transaction_id for instance in instances]
-            messages.info(request,  f'Your order with transaction ID {transaction_ids} has been successfully placed!')
+            messages.info(request,  f'Your order with transaction ID {max_order} has been successfully placed!')
             return redirect('order_form')
 
+        else:
+            context['formset'] = formset
+
     else:
+        MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=1)
         formset = MyModelFormSet(queryset=Orders.objects.none())
         context['formset'] = formset
         context['customer'] = request.user.first_name
@@ -148,8 +158,10 @@ def ETLView(request):
     # Database info card
     records_orders = Orders.objects.count()
     records_rawdata = Rawdata.objects.count()
+    records_datawarehouse = Datawarehouse.objects.count()
 
-    context = {'records_orders': records_orders, 'records_rawdata':records_rawdata, 'title': 'ETL Process'}
+    context = {'records_orders': records_orders, 'records_rawdata':records_rawdata,
+                'records_datawarehouse': records_datawarehouse,'title': 'ETL Process'}
 
     if request.method == 'GET' and 'etl_process' in request.GET:
 
@@ -220,10 +232,9 @@ def TreemapView(request):
     if Datawarehouse.objects.all().exists():
         orders_query = Datawarehouse.objects.all()
         df = pd.DataFrame(orders_query.values())
-        fig = px.treemap(df, 
-                    path=['customer_id', 'product_id'], # Hierarchical data: first customer_id, then product_id
-                    values='line_item_amount', # Size of the rectangles represent line item amount
-                    title='Treemap of Transactions')
+        
+        # Apply Treemap function 
+        fig = plotly_treemap(df)
 
         plot_div = plot(fig, output_type='div', include_plotlyjs=False)
         context = {'treemap': plot_div}
@@ -247,7 +258,7 @@ def DashView(request):
     
 
 def get_product_price(request):
-    '''Function to dynamically fetch product prices for order forms'''
+    '''Function to dynamically fetch product prices for order forms using AJAX'''
     product_id = request.GET.get('product_id')
     if product_id:
         try:

@@ -11,11 +11,7 @@ from .plotly_app import plotly_treemap
 from .models import Datawarehouse
 
 
-
 app = DjangoDash(name='dash_semana')
-
-orders_query = Datawarehouse.objects.all()
-df = pd.DataFrame(orders_query.values())
 
 def dash_test():
 
@@ -41,6 +37,10 @@ app.layout = dash_test
     Input('chart-type', 'value')
 )
 def update_graph(chart_type):
+
+    orders_query = Datawarehouse.objects.all()
+    df = pd.DataFrame(orders_query.values())
+
     if chart_type == 'TM':
         fig = px.treemap(df, 
                         path=['customer_id', 'product_id'],

@@ -1,5 +1,6 @@
 from django import forms
 from .models import Orders
+from django.forms import Select
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, HTML, Layout, Row
 
@@ -8,7 +9,7 @@ class CoffeeShopOrderForm(forms.ModelForm):
     # Generates choices from 1 to 5
     quantity_choices = [('', '--')] + [(i, str(i)) for i in range(1, 6)]
     quantity = forms.ChoiceField(choices=quantity_choices, 
-                                 initial='',
+                                 initial=1,
                                  widget=forms.Select(attrs={'class': 'quantity-dropdown'}))
 
     line_item_amount = forms.FloatField(required=False, disabled=True, label='Line Item Amount')
@@ -39,3 +40,4 @@ class CoffeeShopOrderForm(forms.ModelForm):
     class Meta:
         model = Orders
         fields = ['product', 'quantity', 'unit_price', 'line_item_amount']
+        # widgets = {'product': Select(attrs={'required': 'required'})}

@@ -65,12 +65,14 @@
             if (total > 1) {
                 btn.closest('.row').remove();
                 var forms = $('.row');
-                $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
-                for (var i = 0, formCount = forms.length; i < formCount; i++) {
+                $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length-1);
+                for (var i = 0, formCount = forms.length-1; i < formCount; i++) {
                     $(forms.get(i)).find(':input').each(function() {
                         updateElementIndex(this, prefix, i);
                     });
                 }
+                calculateGrandTotal(); // Recalculate the grand total after removing a row
+
             }
             return false;
         }
@@ -91,10 +93,12 @@
     <script>
         // Function to update line_item_amount for a specific form in the formset
         function updateLineItemAmount(formRow) {
+            var productInput = formRow.querySelector('.product-field');
             var quantityInput = formRow.querySelector('.quantity-field');
             var unitPriceInput = formRow.querySelector('.unit-price-field');
             var lineItemAmountInput = formRow.querySelector('.line-item-amount-field');
 
+            var product = productInput ? parseFloat(productInput.value) || 0 : 0;
             var quantity = quantityInput ? parseFloat(quantityInput.value) || 0 : 0;
             var unitPrice = unitPriceInput ? parseFloat(unitPriceInput.value) || 0 : 0;
             var total = quantity * unitPrice;
@@ -131,21 +135,21 @@
             document.getElementById('grandTotal').textContent = `$${grandTotal.toFixed(2)}`;
         }
 
-        function deleteForm(prefix, btn) {
-            var total = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
-            if (total > 1) {
-                btn.closest('.row').remove();
-                var forms = $('.row');
-                $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
-                for (var i = 0, formCount = forms.length; i < formCount; i++) {
-                    $(forms.get(i)).find(':input').each(function() {
-                        updateElementIndex(this, prefix, i);
-                    });
-                }
-                calculateGrandTotal(); // Recalculate the grand total after removing a row
-            }
-            return false;
-        }
+        // function deleteForm(prefix, btn) {
+        //     var total = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
+        //     if (total > 1) {
+        //         btn.closest('.row').remove();
+        //         var forms = $('.row');
+        //         $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length-1);
+        //         for (var i = 0, formCount = forms.length-1; i < formCount; i++) {
+        //             $(forms.get(i)).find(':input').each(function() {
+        //                 updateElementIndex(this, prefix, i);
+        //             });
+        //         }
+        //         calculateGrandTotal(); // Recalculate the grand total after removing a row
+        //     }
+        //     return false;
+        // }
 
         document.addEventListener('input', function(event) {
             if (event.target.matches('.quantity-field, .unit-price-field')) {

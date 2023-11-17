@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.urls import path
 from .models import Customers, Datawarehouse, Orders, Products, Rawdata
+from .utils import parse_date
 
 
 class CsvCustomersForm(forms.Form):
@@ -42,7 +43,7 @@ class CustomersAdmin(admin.ModelAdmin):
                     home_store = column[1]
                     customer_name = column[2]
                     customer_email = column[3]
-                    customer_since = datetime.strptime(str(column[4]), '%m/%d/%Y').strftime('%Y-%m-%d')
+                    customer_since = parse_date(column[4])
 
                     # Use bulk_create to insert the list of Customers objects into the database
                     customers = Customers(
@@ -145,7 +146,7 @@ class RawdataAdmin(admin.ModelAdmin):
                 
                 for column in csv_reader:
                     transaction_id = column[0]
-                    transaction_date = datetime.strptime(str(column[1]), '%m/%d/%Y').strftime('%Y-%m-%d')
+                    transaction_date = parse_date(column[1])
                     transaction_time = column[2]
                     customer_id = column[5]
                     order = column[7]
@@ -183,8 +184,30 @@ class RawdataAdmin(admin.ModelAdmin):
         return render(request, 'admin/csv_rawdata.html', context)
 
 
+class CsvDatawarehouseForm(forms.Form):
+    csv_rawdata = forms.FileField
+
+class DatawarehouseAdmin(admin.ModelAdmin):
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls  = [path('csv-datawarehouse/', self.csv_datawarehouse)]
+        return custom_urls + urls
+
+    def csv_datawarehouse(self, request):              
+
+        if request.method == 'POST' and 'delete_data' in request.POST:
+            Datawarehouse.objects.all().delete()
+            messages.warning(request, 'Records deleted')
+            return redirect('admin:index')
+
+        form = CsvDatawarehouseForm()
+        context = {'form': form}
+        return render(request, 'admin/csv_datawarehouse.html', context)
+    
+
 admin.site.register(Customers, CustomersAdmin)
-admin.site.register(Datawarehouse)
+admin.site.register(Datawarehouse, DatawarehouseAdmin)
 admin.site.register(Orders)
 admin.site.register(Products, ProductsAdmin)
 admin.site.register(Rawdata, RawdataAdmin)
