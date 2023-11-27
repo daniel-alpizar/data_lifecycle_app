@@ -1,8 +1,14 @@
 {%  extends "coffeeshop/base.html" %}
 {% load crispy_forms_tags %}
+{% load humanize %}
 
 {% block content %}
+
+
 <body>
+    <div class="container d-flex flex-wrap">
+        <div class="col-md-8" style="padding-right: 30px;"> <!-- Fist column for Order Form -->
+
     <div class="form-row col-md-3" style="padding-bottom: 20px;">
         <label class="form-label">Customer</label>
         <input type="text" class="form-control" placeholder="{{ customer }}" disabled>
@@ -14,13 +20,36 @@
                     {% crispy form %}
                 {% endfor %}
         <div class="form-row">
-            <div class="col-md-12 text-right">
-                <h4>Grand Total: <span id="grandTotal">$0.00</span></h4>
+            <div class="col-md-8 text-right">
+                <h5>Grand Total: <span id="grandTotal">$0.00</span></h5>
             </div>
         </div>
         <button type="button" class="btn btn-primary" id="addRow">+</button>
         <button type="submit" class="btn btn-success">Submit</button>
     </form>
+
+        </div>
+
+        <div class="col-md-4" style="padding-left: 30px;"> <!-- Second column for Menu -->
+            <div class="content-section" style="font-size: 0.8em;">
+                <h4>Menu</h4>
+                {% if grouped_products %}
+                    {% for category, products in grouped_products.items %}
+                        <h5>{{ category }}</h5> <!-- Product category as subtitle -->
+                        <ul style="list-style-type: none;">
+                            {% for product in products %}
+                                <li>{{ product.product }} - ${{ product.current_retail_price }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                {% else %}
+                    <p>No products available.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+
+    </div>
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

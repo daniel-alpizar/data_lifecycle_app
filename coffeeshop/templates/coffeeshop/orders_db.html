@@ -6,8 +6,8 @@
 <br>
 
 <div class="row">
-	<div class="col-md-4">
-		<div class="card text-center text-white  mb-3" id="database_info">
+	<div class="col-md-5">
+		<div class="card text-center text-white  mb-5" id="database_info">
 			<div class="card-header">
 				<h5 class="card-title">Orders Database</h5>
 			</div>
@@ -21,6 +21,18 @@
 							<td>Largest order:</td>
 							<td>{{ largest|intcomma }}</td>
 						</tr>
+						<tr align="left">
+							<td>Best Seller Item:</td>
+							<td>{{ most_popular_item|intcomma }}</td>
+						</tr>
+						<tr align="left">
+							<td>Best Customer:</td>
+							<td>{{ best_customer_name }}</td>
+						</tr>
+						<tr align="left">
+							<td>Total Spent:</td>
+							<td>${{ best_customer_spent|intcomma }}</td>
+						</tr>
 				</table>
 			</div>
 		</div>
@@ -30,10 +42,10 @@
 
 <form method="get" action="{% url 'orders_db' %}">
 	<input type="hidden" name="render_data">
-    <button type="submit">Query Database</button>
+    <button type="submit" class="btn orange-button">Query Database</button>
 </form>
 
-<div class="row">
+<div class="scrollable-content">
 	{% if df_render %}
 	  {{ df_render|safe }}
 	{% endif %}

@@ -14,6 +14,10 @@ from .forms import CoffeeShopOrderForm
 from .plotly_app import plotly_treemap
 from .dash_test import dash_test
 from users.decorators import allowed_users
+from itertools import groupby
+from operator import attrgetter
+from collections import OrderedDict
+
 
 
 # @admin_only
@@ -29,6 +33,7 @@ def OrdersDBView(request):
     '''Renders Order table as DataFrame'''
 
     template = 'coffeeshop/orders_db.html'
+    database_title = 'Transactional Database'
 
     # Database info card
     records = Orders.objects.count()
@@ -36,16 +41,44 @@ def OrdersDBView(request):
     # Aggregate and find largest transaction by total amount
     transactions_total = Orders.objects.values('order').annotate(total_amount=Sum('line_item_amount'))
     largest_transaction = transactions_total.aggregate(largest_amount=Max('total_amount'))
-    largest_transactions = transactions_total.filter(total_amount=largest_transaction['largest_amount'])
 
-    # If there are no transactions, handle the case where 'largest_transaction' might be None
     if largest_transaction['largest_amount'] is not None:
         # Format the largest amount as a currency string
         largest_amount = "${:,.2f}".format(largest_transaction['largest_amount'])
     else:
         largest_amount = "N/A"
 
-    context = {'records': records, 'largest':largest_amount, 'title': 'Orders Database'}
+
+    # Calculate the most popular item
+    popular_items = Orders.objects.values('product__product').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')
+    most_popular_item = popular_items.first()
+
+    if most_popular_item:
+        most_popular_item = most_popular_item['product__product']
+    else:
+        most_popular_item = "N/A"
+
+
+    # Aggregate the total spent by each customer
+    customer_spending = Orders.objects.values('customer__user__username').annotate(total_spent=Sum('line_item_amount')).order_by('-total_spent')
+    best_customer = customer_spending.first()
+
+    if best_customer:
+        best_customer_name = best_customer['customer__user__username']
+        best_customer_spent = best_customer['total_spent']
+    else:
+        best_customer_name = "N/A"
+        best_customer_spent = 0
+
+
+    context = {
+        'title': 'Orders Database',
+        'records': records,
+        'largest':largest_amount,
+        'most_popular_item': most_popular_item,
+        'best_customer_name': best_customer_name,
+        'best_customer_spent': best_customer_spent}
+    
 
     if request.method == 'GET' and 'render_data' in request.GET:
         # This is for rendering the data
@@ -60,7 +93,7 @@ def OrdersDBView(request):
             column_names = [field.name for field in model_fields if field.concrete]
             df = pd.DataFrame(columns=column_names)
 
-        df = df_format(df)
+        df = df_format(df, database_title)
         df = df.to_html()
         context['df_render'] = df
 
@@ -75,6 +108,7 @@ def RawDataDBView(request):
     '''Import CSV to database and render as DataFrame'''
 
     template = 'coffeeshop/rawdata_db.html'
+    database_title = 'Raw Transactional Database'
 
     # Database info card
     records = Rawdata.objects.count()
@@ -89,13 +123,14 @@ def RawDataDBView(request):
         if orders_query.exists():
             # Convert the QuerySet to a DataFrame
             df = pd.DataFrame(orders_query.values())
+            df.drop(df.columns[0], axis=1, inplace=True)
         else:
             # Get column names from the model's fields
             model_fields = Rawdata._meta.get_fields()
             column_names = [field.name for field in model_fields if field.concrete]
             df = pd.DataFrame(columns=column_names)
 
-        df = df_format(df)
+        df = df_format(df, database_title)
         df = df.to_html()
         context['df_render'] = df
 
@@ -111,8 +146,6 @@ def OrderFormSetView(request):
 
     template = 'coffeeshop/order_form.html'
     context = {'title': 'Order Form'}
-
-    # MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=1)
 
     if request.method == 'POST':
         MyModelFormSet = modelformset_factory(Orders, form=CoffeeShopOrderForm, extra=0)
@@ -145,6 +178,16 @@ def OrderFormSetView(request):
         context['formset'] = formset
         context['customer'] = request.user.first_name
 
+    products = Products.objects.all().order_by('product_category', 'product')
+    grouped_products = {k: list(g) for k, g in groupby(products, key=attrgetter('product_category'))}
+    # Desired order of categories
+    category_order = ['Coffee', 'Tea', 'Chocolate', 'Bakery']
+
+    # Create an ordered dictionary based on the desired category order
+    ordered_grouped_products = OrderedDict((cat, grouped_products[cat]) for cat in category_order if cat in grouped_products)
+
+    context['grouped_products'] = ordered_grouped_products
+
     return render(request, template, context)
 
 
@@ -154,14 +197,18 @@ def ETLView(request):
     '''Clean and concatenates Orders and Rawdata'''
 
     template = 'coffeeshop/etl_process.html'
+    database_title = 'Data Warehouse'
 
-    # Database info card
-    records_orders = Orders.objects.count()
-    records_rawdata = Rawdata.objects.count()
-    records_datawarehouse = Datawarehouse.objects.count()
+    def info_card():
+        # Database info card
+        records_orders = Orders.objects.count()
+        records_rawdata = Rawdata.objects.count()
+        records_datawarehouse = Datawarehouse.objects.count()
 
-    context = {'records_orders': records_orders, 'records_rawdata':records_rawdata,
+        context = {'records_orders': records_orders, 'records_rawdata':records_rawdata,
                 'records_datawarehouse': records_datawarehouse,'title': 'ETL Process'}
+        
+        return context
 
     if request.method == 'GET' and 'etl_process' in request.GET:
 
@@ -201,6 +248,7 @@ def ETLView(request):
 
         # Bulk create Datawarehouse entries
         Datawarehouse.objects.bulk_create(data_warehouse_entries)
+        context = info_card()
         return render(request, template, context)
 
     elif request.method == 'GET' and 'render_data' in request.GET:
@@ -210,19 +258,22 @@ def ETLView(request):
         if orders_query.exists():
             # Convert the QuerySet to a DataFrame
             df = pd.DataFrame(orders_query.values())
+            df.drop(df.columns[0], axis=1, inplace=True)
         else:
             # Get column names from the model's fields
             model_fields = Datawarehouse._meta.get_fields()
             column_names = [field.name for field in model_fields if field.concrete]
             df = pd.DataFrame(columns=column_names)
 
-        df = df_format(df)
+        df = df_format(df, database_title)
         df = df.to_html()
+        context = info_card()
         context['df_render'] = df
 
         return render(request, template, context)
 
     else:
+        context = info_card()
         return render(request, template, context)
     
 

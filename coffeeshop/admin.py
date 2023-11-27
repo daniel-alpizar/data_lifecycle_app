@@ -70,6 +70,28 @@ class CustomersAdmin(admin.ModelAdmin):
         return render(request, 'admin/csv_customers.html', context)
 
 
+class CsvOrdersForm(forms.Form):
+    csv_orders = forms.FileField
+
+class OrdersAdmin(admin.ModelAdmin):
+
+    def get_urls(self):
+        urls = super().get_urls()
+        new_urls = [path('csv-orders/', self.csv_orders)]
+        return new_urls + urls
+    
+    def csv_orders(self, request):
+        if request.method == 'POST' and 'delete_data' in request.POST:
+            # This is for erasing all rows in the database
+            Orders.objects.all().delete()
+            messages.warning(request, 'Records deleted')
+            return redirect('admin:index')
+
+        form = CsvOrdersForm()
+        context = {'form': form}
+        return render(request, 'admin/csv_orders.html', context)
+
+
 class CsvProductForm(forms.Form):
     csv_products = forms.FileField
 
@@ -81,9 +103,9 @@ class ProductsAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         new_urls = [path('csv-products/', self.csv_products)]
         return new_urls + urls
-
+    
     def csv_products(self, request):
-        if request.method == 'POST':
+        if request.method == 'POST' and 'csv_file' in request.FILES:
             Products.objects.all().delete()
 
             csv_file = request.FILES['csv_file']
@@ -109,6 +131,12 @@ class ProductsAdmin(admin.ModelAdmin):
                     
                 messages.info(request, 'CSV file imported successfully')
                 return redirect('admin:index')
+
+        elif request.method == 'POST' and 'delete_data' in request.POST:
+            # This is for erasing all rows in the database
+            Products.objects.all().delete()
+            messages.warning(request, 'Records deleted')
+            return redirect('admin:index')
 
         form = CsvProductForm()
         context = {'form': form}
@@ -208,6 +236,6 @@ class DatawarehouseAdmin(admin.ModelAdmin):
 
 admin.site.register(Customers, CustomersAdmin)
 admin.site.register(Datawarehouse, DatawarehouseAdmin)
-admin.site.register(Orders)
+admin.site.register(Orders, OrdersAdmin)
 admin.site.register(Products, ProductsAdmin)
 admin.site.register(Rawdata, RawdataAdmin)

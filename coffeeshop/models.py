@@ -53,16 +53,6 @@ class Orders(models.Model):
 
     # Overrides save method
     def save(self, *args, **kwargs):
-        # # Assigns an incremental value to 'transaction_id' if not provided
-        # if self.transaction_id is None:
-        #     last_instance = Orders.objects.aggregate(models.Max('transaction_id'))
-        #     last_value = last_instance['transaction_id__max']
-
-        #     if last_value is not None:
-        #         self.transaction_id = last_value + 1
-        #     else:
-        #         self.transaction_id = 1
-
         # Calculates 'line_item_amount'
         self.line_item_amount = float(self.quantity) * self.unit_price
         super().save(*args, **kwargs)

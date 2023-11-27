@@ -26,7 +26,7 @@ c2 = 'background-color: lightgreen'
 c3 = 'background-color: lightsteelblue'
 
 
-def df_format(df):
+def df_format(df, title):
     '''Apply custom formatting style to dataframes'''
 
     if len(df) > 0:
@@ -37,10 +37,13 @@ def df_format(df):
                 .set_properties(subset=cols_floats, **float_props)                
                 .format(precision=2)
                 .set_table_styles(styles)
-                .set_caption('Transactional Database'))
+                .set_caption(title)
+                # .set_sticky(axis='index')
+                )
+
     else:        
         df = (df.style
                 .set_table_styles(styles)
-                .set_caption('Transactional Database'))
+                .set_caption(title))
 
     return df

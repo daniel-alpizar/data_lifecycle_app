@@ -1,33 +1,31 @@
 body {
-  background: #f4f1ee; /* Creamy white, like the froth on a cappuccino */
-  color: #5b3a29; /* Rich coffee brown */
+  background: #fafafa;
+  color: #333333;
   margin-top: 5rem;
 }
 
 h1, h2, h3, h4, h5 {
-  color: #6b4423; /* Darker brown, evoking roasted coffee beans */
+  color: #444444;
 }
-
 h6 {
   margin-top: 0;
   margin-bottom: 0;
   font-weight: 800;
 }
-
 ul {
   margin: 0;
 }
 
 .bg-steel {
-  background-color: #77a464; /* Muted brown, reminiscent of coffee with milk */
+  background-color: #5f788a;
 }
 
 .site-header .navbar-nav .nav-link {
-  color: #ffffff; /* Bright, lively green, reminiscent of fresh spring leaves */
+  color: #cbd5db;
 }
 
 .site-header .navbar-nav .nav-link:hover {
-  color: #f99c4f; /* Even brighter green, evoking the vibrancy of lush foliage */
+  color: #ffffff;
 }
 
 .site-header .navbar-nav .nav-link.active {
@@ -35,19 +33,19 @@ ul {
 }
 
 .content-section {
-  background: #fffaf3; /* Off-white, like cream */
+  background: #ffffff;
   padding: 10px 20px;
-  border: 1px solid #e0c1b3; /* Soft brown, like sugar */
+  border: 1px solid #dddddd;
   border-radius: 3px;
   margin-bottom: 20px;
 }
 
 .article-title {
-  color: #6b4423; /* Same as headers, for consistency */
+  color: #444444;
 }
 
 a.article-title:hover {
-  color: #d35400;
+  color: #428bca;
   text-decoration: none;
 }
 
@@ -64,11 +62,11 @@ a.article-title:hover {
 .article-metadata {
   padding-bottom: 1px;
   margin-bottom: 4px;
-  border-bottom: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3
 }
 
 .article-metadata a:hover {
-  color: #5b3a29;
+  color: #333;
   text-decoration: none;
 }
 
@@ -91,22 +89,11 @@ a.article-title:hover {
 
 .hello-msg {
   font-size: 18px;
-  color: #81c784;
+  color: #ffffff;
   margin-right: 20px;
 }
 
 .scrollable-content {
   max-height: 400px;
   overflow-y: auto;
-}
-
-.site-header .navbar-nav .nav-link {
-  font-weight: bold;
-}
-
-.orange-button {
-  background-color: #ff6600;
-  border-color: #ff6600;
-  color: white;
-  font-weight: bold;
 }
