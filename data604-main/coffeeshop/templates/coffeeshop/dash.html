@@ -1,0 +1,16 @@
+{%  extends "coffeeshop/base.html" %}
+{% load static %}
+
+{% block content %}
+
+{% load plotly_dash %}
+{% plotly_header %}
+
+{% if data_exists %}
+    {% plotly_direct name='dash_semana' %}
+{% endif %}
+
+{% plotly_footer %}
+
+
+{% endblock %}

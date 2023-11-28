@@ -1,0 +1,52 @@
+{% extends "coffeeshop/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<br>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center text-white mb-3" id="database_info">
+            <div class="card-header">
+                <h5 class="card-title">Customers Database</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr align="left">
+                        <td>Total records:</td>
+                        <td>{{ records|intcomma }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+
+<form method="get" action="{% url 'customer_list' %}">
+    <input type="hidden" name="render_data">
+    <button type="submit" class="btn btn-primary">Query Database</button>
+</form>
+
+<div class="row">
+    {% if df_render %}
+        {{ df_render|safe }}
+    {% endif %}
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.querySelector('.table-bordered');
+        if (table) {
+            table.addEventListener('click', function(e) {
+                if (e.target.tagName === 'TD') {
+                    const row = e.target.parentNode;
+                    const deleteButton = row.querySelector('.delete-btn');
+                    if (deleteButton) {
+                        deleteButton.style.display = 'block';
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

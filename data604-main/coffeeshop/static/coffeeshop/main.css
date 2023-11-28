@@ -1,0 +1,112 @@
+body {
+  background: #f4f1ee; /* Creamy white, like the froth on a cappuccino */
+  color: #5b3a29; /* Rich coffee brown */
+  margin-top: 5rem;
+}
+
+h1, h2, h3, h4, h5 {
+  color: #6b4423; /* Darker brown, evoking roasted coffee beans */
+}
+
+h6 {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-weight: 800;
+}
+
+ul {
+  margin: 0;
+}
+
+.bg-steel {
+  background-color: #77a464; /* Muted brown, reminiscent of coffee with milk */
+}
+
+.site-header .navbar-nav .nav-link {
+  color: #ffffff; /* Bright, lively green, reminiscent of fresh spring leaves */
+}
+
+.site-header .navbar-nav .nav-link:hover {
+  color: #f99c4f; /* Even brighter green, evoking the vibrancy of lush foliage */
+}
+
+.site-header .navbar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.content-section {
+  background: #fffaf3; /* Off-white, like cream */
+  padding: 10px 20px;
+  border: 1px solid #e0c1b3; /* Soft brown, like sugar */
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+
+.article-title {
+  color: #6b4423; /* Same as headers, for consistency */
+}
+
+a.article-title:hover {
+  color: #d35400;
+  text-decoration: none;
+}
+
+.article-content {
+  white-space: pre-line;
+}
+
+.article-img {
+  height: 65px;
+  width: 65px;
+  margin-right: 16px;
+}
+
+.article-metadata {
+  padding-bottom: 1px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e3e3e3;
+}
+
+.article-metadata a:hover {
+  color: #5b3a29;
+  text-decoration: none;
+}
+
+.article-svg {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+}
+
+.account-img {
+  height: 125px;
+  width: 125px;
+  margin-right: 20px;
+  margin-bottom: 16px;
+}
+
+.account-heading {
+  font-size: 2.5rem;
+}
+
+.hello-msg {
+  font-size: 18px;
+  color: #81c784;
+  margin-right: 20px;
+}
+
+.scrollable-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.site-header .navbar-nav .nav-link {
+  font-weight: bold;
+}
+
+.orange-button {
+  background-color: #ff6600;
+  border-color: #ff6600;
+  color: white;
+  font-weight: bold;
+}

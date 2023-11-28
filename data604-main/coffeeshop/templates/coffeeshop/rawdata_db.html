@@ -1,0 +1,45 @@
+{%  extends "coffeeshop/base.html" %}
+{% load humanize %}
+
+
+{% block content %}
+<br>
+
+<div class="row">
+		<div class="col-md-4">
+			<div class="card text-center text-white  mb-3" id="database_info">
+			  	<div class="card-header">
+			  		<h5 class="card-title">Raw Database</h5>
+			  	</div>
+			  	<div class="card-body">
+					<table class="table table-sm">
+							<tr align="left">
+								<td>Total records:</td>
+								<td>{{ records|intcomma }}</td>
+							</tr>
+							<tr align="left">
+								<td>Number of colums:</td>
+								<td>{{ columns|intcomma }}</td>
+							</tr>
+					</table>
+			  	</div>
+			</div>
+		</div>
+		<div class="col-md-1"></div>
+		<div class="col-md-4">
+		</div>
+</div>
+<br>
+
+<form method="get" action="{% url 'rawdata_db' %}">
+	<input type="hidden" name="render_data">
+    <button type="submit">Render Data</button>
+</form>
+
+<div class="scrollable-content">
+	{% if df_render %}
+	  {{ df_render|safe }}
+	{% endif %}
+</div>
+
+{% endblock %}

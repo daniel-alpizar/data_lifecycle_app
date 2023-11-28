@@ -1,0 +1,54 @@
+{%  extends "coffeeshop/base.html" %}
+{% load humanize %}
+
+
+{% block content %}
+<br>
+
+<div class="row">
+	<div class="col-md-5">
+		<div class="card text-center text-white  mb-5" id="database_info">
+			<div class="card-header">
+				<h5 class="card-title">Orders Database</h5>
+			</div>
+			<div class="card-body">
+				<table class="table table-sm">
+						<tr align="left">
+							<td>Total records:</td>
+							<td>{{ records|intcomma }}</td>
+						</tr>
+						<tr align="left">
+							<td>Largest order:</td>
+							<td>{{ largest|intcomma }}</td>
+						</tr>
+						<tr align="left">
+							<td>Best Seller Item:</td>
+							<td>{{ most_popular_item|intcomma }}</td>
+						</tr>
+						<tr align="left">
+							<td>Best Customer:</td>
+							<td>{{ best_customer_name }}</td>
+						</tr>
+						<tr align="left">
+							<td>Total Spent:</td>
+							<td>${{ best_customer_spent|intcomma }}</td>
+						</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<br>
+
+<form method="get" action="{% url 'orders_db' %}">
+	<input type="hidden" name="render_data">
+    <button type="submit" class="btn orange-button">Query Database</button>
+</form>
+
+<div class="scrollable-content">
+	{% if df_render %}
+	  {{ df_render|safe }}
+	{% endif %}
+</div>
+
+{% endblock %}

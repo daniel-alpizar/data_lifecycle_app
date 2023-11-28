@@ -1,0 +1,11 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <div>
+        <form action="." method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Delete all records:</label>
+            <button type="submit" class="btn btn-danger float-left" name="delete_data">Delete</button>
+        </form>
+    </div>
+{% endblock %}
